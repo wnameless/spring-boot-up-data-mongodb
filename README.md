@@ -194,7 +194,7 @@ car.setGasTank(gasTank);
 car.setWheels(wheels);
 carRepository.save(car);
 
-carRepository.deleteAll();
+carRepository.deleteAll(); // Instead, carRepository.deleteAll(carRepository.findAll()) is working well
 carRepository.count(); // 0
 engineRepository.count(); // 1
 motorRepository.count(); // 1
