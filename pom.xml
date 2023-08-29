@@ -3,27 +3,57 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.1.3</version>
     <relativePath /> <!-- lookup parent from repository -->
   </parent>
+
   <groupId>com.github.wnameless.spring.boot.up</groupId>
   <artifactId>spring-boot-up-data-mongodb</artifactId>
   <version>3.0.0-SNAPSHOT</version>
+
   <name>spring-boot-up-data-mongodb</name>
   <description>MongoDB enhancement brought by SpringBootUp</description>
+  <url>https://github.com/wnameless/spring/spring-boot-up-data-mongodb</url>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:wnameless/spring-boot-up-data-mongodb.git</connection>
+    <developerConnection>scm:git:git@github.com:wnameless/spring-boot-up-data-mongodb.git</developerConnection>
+    <url>git@github.com:wnameless/spring-boot-up-data-mongodb.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>wnameless</id>
+      <name>Wei-Ming Wu</name>
+      <email>wnameless@gmail.com</email>
+    </developer>
+  </developers>
+
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.github.wnameless.spring.boot.up</groupId>
       <artifactId>spring-boot-up-core</artifactId>
       <version>3.0.0</version>
     </dependency>
-
     <dependency>
       <groupId>com.github.wnameless.json</groupId>
       <artifactId>json-flattener</artifactId>
