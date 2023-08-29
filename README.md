@@ -76,7 +76,7 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 | --- | --- | --- |
 | [Cascade(@CascadeRef, @ParentRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
 | [Annotation Driven Event](#3.0.0-2) | Annotation Driven Event feature for Mongo Event  | v3.0.0 |
-| [Projection](#3.0.0-3) | Projection feature supports both QueryDSL projection and Spring Data Query | v3.0.0 |
+| [Projection](#3.0.0-3) | Projection feature supports both QueryDSL Predicate and Spring Data Query | v3.0.0 |
 
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
 Entity.
