@@ -2,9 +2,9 @@
 
 spring-boot-up-data-mongodb
 =============
-MongoDB enhancement by spring-boot-up.
+MongoDB enhancement brought by SpringBootUp.
 
-## Purpose - reduces the boilerplate code brought by Spring @DBRef
+## Purpose - reduces the boilerplate code followed by Spring @DBRef
 Init.
 ```java
 var car  = new Car();
@@ -18,7 +18,7 @@ var rareLeftWheel = new Wheel();
 var wheels = Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel);
 ```
 
-Before enable spring-boot-up-data-mongodb.
+Before enable spring-boot-up-data-mongodb, we have to create and save documents before creating the @DBRef.
 ```java
 motorRepository.save(motor);
 
@@ -35,7 +35,7 @@ car.getWheels().addAll(wheels);
 carRepository.save(car);
 ```
 
-After enable spring-boot-up-data-mongodb.
+After enable spring-boot-up-data-mongodb, we only need to build up the replationship between documents.
 ```java
 car.setEngine(engine);
 engine.setMotor(motor);
@@ -74,7 +74,7 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 # Feature List<a id='top'></a>
 | Name | Description | Since |
 | --- | --- | --- |
-| [Cascade](#3.0.0-1) | Cascade feature for Spring Data MongoDB | v3.0.0 |
+| [Cascade(@CascadeRef, @ParentRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB | v3.0.0 |
 | [Annotation Driven Event](#3.0.0-2) | Annotation Driven Event feature for Spring Data MongoDB  | v3.0.0 |
 | [Projection](#3.0.0-3) | Projection feature for Spring Data MongoDB | v3.0.0 |
 
@@ -83,7 +83,6 @@ Entity
 ```java
 @Document
 public class Car {
-
   @Id
   String id;
 
@@ -98,11 +97,74 @@ public class Car {
   @CascadeRef
   @DBRef
   List<Wheel> frontWheels = new ArrayList<>();
+}
+```
+```java
+@Document
+public class Engine {
+  @Id
+  String id;
+
+  @ParentRef
+  @DBRef
+  Car car;
+
+  double horsePower;
+
+  @CascadeRef
+  @DBRef
+  Motor motor;
+}
+```
+```java
+@Document
+public class GasTank {
+
+  @Id
+  String id;
+
+  @ParentRef
+  @DBRef
+  Car car;
+
+  double capacity;
 
 }
 ```
+```java
+@Document
+public class Motor {
+  @Id
+  String id;
 
-Operation
+  @ParentRef
+  @DBRef
+  Engine engine;
+
+  double rpm;
+}
+```
+```java
+@Document
+public class Wheel {
+  @Id
+  String id;
+
+  @ParentRef
+  @DBRef(lazy = true)
+  Car car;
+
+  String tireBrand;
+
+  public Wheel() {}
+
+  public Wheel(String tireBrand) {
+    this.tireBrand = tireBrand;
+  }
+}
+```
+
+Operation.
 ```java
 car.setEngine(engine);
 engine.setMotor(motor);
@@ -141,7 +203,7 @@ wheelRepository.count(); // 4
 ```
 
 ### [:top:](#top) Annotation Driven Event<a id='3.0.0-2'></a>
-Entity
+Entity.
 ```java
 @Document
 public class Car {
