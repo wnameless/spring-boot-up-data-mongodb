@@ -16,15 +16,15 @@ public enum CascadeType {
    */
   ALL,
   /**
-   * Cascades while document is creating
+   * Cascades target field while the {@link CascadeRef} annotated document is creating
    */
   CREATE,
   /**
-   * Cascades while document is updating
+   * Cascades target field while the {@link CascadeRef} annotated document is updating
    */
   UPDATE,
   /**
-   * Cascades while document is deleting
+   * Cascades target field while the {@link CascadeRef} annotated document is deleting
    */
   DELETE;
 
