@@ -21,8 +21,8 @@ var wheels = Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rare
 Before enable spring-boot-up-data-mongodb, we have to create and save documents before creating the @DBRef.
 ```java
 motorRepository.save(motor);
-
 engine.setMotor(motor);
+
 engineRepository.save(engine);
 car.setEngine(engine);
 
