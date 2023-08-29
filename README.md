@@ -1,4 +1,4 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.wnameless.spring/spring-boot-up-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.wnameless.spring/spring-boot-up-core)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.wnameless.spring.boot.up/spring-boot-up-data-mongodb/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.wnameless.spring.boot.up/spring-boot-up-data-mongodb)
 
 spring-boot-up-data-mongodb
 =============
@@ -35,7 +35,7 @@ car.getWheels().addAll(wheels);
 carRepository.save(car);
 ```
 
-After enable spring-boot-up-data-mongodb, we only need to build up the replationship between documents.
+After enable spring-boot-up-data-mongodb, we only need to focus on the relationships between documents.
 ```java
 car.setEngine(engine);
 engine.setMotor(motor);
