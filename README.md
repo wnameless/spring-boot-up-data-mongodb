@@ -88,20 +88,20 @@ public interface CarRepository extends MongoRepository<Car, String>, MongoProjec
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
 Entity:
 ```java
-@Document
+Document
 public class Car {
   @Id
   String id;
 
-  @CascadeRef
+  @CascadeRef({CascadeType.CREATE})
   @DBRef
   Engine engine;
 
-  @CascadeRef
+  @CascadeRef({CascadeType.CREATE, CascadeType.DELETE})
   @DBRef
   GasTank gasTank;
 
-  @CascadeRef
+  @CascadeRef({CascadeType.CREATE, CascadeType.UPDATE})
   @DBRef
   List<Wheel> wheels = new ArrayList<>();
 }
@@ -146,6 +146,10 @@ public class Motor {
   @DBRef
   Engine engine;
 
+  @ParentRef("car")
+  @DBRef
+  Car car;
+
   double rpm = 60000;
 }
 ```
@@ -159,30 +163,45 @@ public class Wheel {
   @DBRef
   Car car;
 
-  String tireBrand;
+  String tireBrand = "MAXXIS";
 }
+
 ```
 
-Operation:
+BeaforeEach:
 ```java
+carRepository.deleteAll();
+gasTankRepository.deleteAll();
+engineRepository.deleteAll();
+motorRepository.deleteAll();
+wheelRepository.deleteAll();
+
 car.setGasTank(gasTank);
 car.setEngine(engine);
 engine.setMotor(motor);
-car.setWheels(wheels);
+car.setWheels(Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel));
 carRepository.save(car);
+```
 
-carRepository.count(); // 1
-gasTankRepository.count(); // 1
-engineRepository.count(); // 1
-motorRepository.count(); // 1
-wheelRepository.count(); // 4
+Test CascadeType.CREATE
+```java
+assertEquals(1, carRepository.count());
+assertEquals(1, gasTankRepository.count());
+assertEquals(1, engineRepository.count());
+assertEquals(1, motorRepository.count());
+assertEquals(4, wheelRepository.count());
+```
 
-carRepository.delete(car);
-carRepository.count(); // 0
-gasTankRepository.count(); // 0
-engineRepository.count(); // 0
-motorRepository.count(); // 0
-wheelRepository.count(); // 0
+Test @ParentRef
+```java
+assertSame(car, gasTank.getCar());
+assertSame(car, engine.getCar());
+assertSame(car, motor.getCar());
+assertSame(engine, motor.getEngine());
+assertSame(car, frontRightWheel.getCar());
+assertSame(car, frontLeftWheel.getCar());
+assertSame(car, rareRightWheel.getCar());
+assertSame(car, rareLeftWheel.getCar());
 ```
 
 #### Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll)
