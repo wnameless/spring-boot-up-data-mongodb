@@ -18,10 +18,14 @@ public class CascadeCreateUpdateCallback implements ReflectionUtils.FieldCallbac
 
   private final Object source;
   private final MongoOperations mongoOperations;
+  private final IdFieldCallback sourceIdCallback;
 
   public CascadeCreateUpdateCallback(Object source, MongoOperations mongoOperations) {
     this.source = source;
     this.mongoOperations = mongoOperations;
+    IdFieldCallback sourceIdCallback = new IdFieldCallback();
+    ReflectionUtils.doWithFields(source.getClass(), sourceIdCallback);
+    this.sourceIdCallback = sourceIdCallback;
   }
 
   @Override
@@ -61,16 +65,13 @@ public class CascadeCreateUpdateCallback implements ReflectionUtils.FieldCallbac
 
   private void cascadeUpsert(Object value, List<CascadeType> cascadeTypes)
       throws IllegalArgumentException, IllegalAccessException {
-    IdFieldCallback callback = new IdFieldCallback();
-    ReflectionUtils.doWithFields(value.getClass(), callback);
-
-    if (callback.isIdFound()) {
-      Object id = callback.getId(value);
-      if (id == null) {
+    if (sourceIdCallback.isIdFound()) {
+      Object sourceId = sourceIdCallback.getId(source);
+      if (sourceId == null) {
         if (cascadeTypes.contains(ALL) || cascadeTypes.contains(CREATE)) {
           mongoOperations.save(value);
         }
-      } else { // id != null
+      } else { // sourceId != null
         if (cascadeTypes.contains(ALL) || cascadeTypes.contains(UPDATE)) {
           mongoOperations.save(value);
         }

@@ -1,7 +1,10 @@
 package cascade.github;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,14 +73,28 @@ public class GithubTest {
   }
 
   @Test
-  public void testCascadeUpdate() {
-    car.getEngine().setHorsePower(600);
-    car.getWheels().get(0).setTireBrand("Goodyear");
-    carRepository.save(car);
-    car = carRepository.findById(car.getId()).get();
+  public void testCascadeUpdateException() {
+    car = new Car();
+    var subGasTank = new GasTank();
+    car.setSubGasTank(subGasTank);
+    assertThrows(RuntimeException.class, () -> {
+      carRepository.save(car);
+    });
+  }
 
-    // assertEquals(500, car.getEngine().getHorsePower());
-    assertEquals("Goodyear", car.getWheels().get(0).getTireBrand());
+  @Test
+  public void testCascadeUpdate() {
+    car = new Car();
+    carRepository.save(car);
+
+    assertNotNull(car.getId());
+
+    var subGasTank = new GasTank();
+    car.setSubGasTank(subGasTank);
+    assertNull(subGasTank.getId());
+
+    carRepository.save(car);
+    assertSame(subGasTank, car.getSubGasTank());
   }
 
   @Test

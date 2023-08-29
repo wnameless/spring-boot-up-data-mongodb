@@ -30,4 +30,8 @@ public class Car {
   @DBRef
   List<Wheel> wheels = new ArrayList<>();
 
+  @CascadeRef({CascadeType.UPDATE, CascadeType.DELETE})
+  @DBRef
+  GasTank subGasTank;
+
 }
