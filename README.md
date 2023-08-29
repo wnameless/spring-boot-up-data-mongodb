@@ -74,9 +74,9 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 # Feature List<a id='top'></a>
 | Name | Description | Since |
 | --- | --- | --- |
-| [Cascade(@CascadeRef, @ParentRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB | v3.0.0 |
-| [Annotation Driven Event](#3.0.0-2) | Annotation Driven Event feature for Spring Data MongoDB  | v3.0.0 |
-| [Projection](#3.0.0-3) | Projection feature for Spring Data MongoDB | v3.0.0 |
+| [Cascade(@CascadeRef, @ParentRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
+| [Annotation Driven Event](#3.0.0-2) | Annotation Driven Event feature for Mongo Event  | v3.0.0 |
+| [Projection](#3.0.0-3) | Projection feature supports both QueryDSL projection ans Spring Data Query | v3.0.0 |
 
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
 Entity
@@ -273,11 +273,10 @@ public class Car {
 Annotation Driven Event won't be triggered under Mongo bulk operations.
 
 ### [:top:](#top) Projection<a id='3.0.0-3'></a>
-Init.
+Entity.
 ```java
 @Document
 public class ComplexModel {
-
   @Id
   String id;
 
@@ -290,34 +289,29 @@ public class ComplexModel {
   Boolean b;
 
   NestedModel nested;
-
 }
 ```
-
 ```java
 public class NestedModel {
-
   Float f;
 
   Short s;
-
 }
 ```
-
 ```java
 public class ProjectModel {
-
   String str;
-
 }
 
 ```
 
+Config.
 ```java
 @Repository
 public interface CarRepository extends MongoRepository<Car, String>, MongoProjectionRepository<Car>  {}
 ```
 
+Init.
 ```java
 var model = new ComplexModel();
 model.setStr("str");
@@ -354,7 +348,7 @@ complexModelRepository.findProjectedBy("nested.f");
 ```
 
 ```java
-// By Path
+// By QueryDSL Path
 PathBuilder<Car> entityPath = new PathBuilder<>(ComplexModel.class, "entity");
 carRepository.findAllProjectedBy(entityPath.getString("str"));
 
