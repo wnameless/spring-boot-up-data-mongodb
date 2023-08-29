@@ -5,12 +5,12 @@ spring-boot-up-data-mongodb
 MongoDB enhancement brought by SpringBootUp.
 
 ## Purpose - reduces the boilerplate code followed by Spring @DBRef
-Init.
+Init:
 ```java
 var car  = new Car();
+var gasTank =  new GasTank();
 var engine  = new Engine();
 var motor = new Motor();
-var gasTank =  new GasTank();
 var frontRightWheel = new Wheel();
 var frontLeftWheel = new Wheel();
 var rareRightWheel = new Wheel();
@@ -18,28 +18,34 @@ var rareLeftWheel = new Wheel();
 var wheels = Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel);
 ```
 
-Before enable spring-boot-up-data-mongodb, we have to create and save documents before creating the @DBRef.
+Before spring-boot-up-data-mongodb, we have to create and save documents before constructing the @DBRef:
 ```java
-motorRepository.save(motor);
-engine.setMotor(motor);
-
-engineRepository.save(engine);
-car.setEngine(engine);
+carRepository.save(car);
 
 gasTankRepository.save(gasTank);
-car.setGasTank(gasTank);
+
+engine.setCar(car);
+engineRepository.save(engine);
+
+motor.setEngine(engine);
+motorRepository.save(motor);
+
+engine.setMotor(motor);
+engineRepository.save(engine);
 
 wheelRepository.save(wheels);
-car.getWheels().addAll(wheels);
 
+car.setGasTank(gasTank);
+car.setEngine(engine);
+car.setWheels((wheels);
 carRepository.save(car);
 ```
 
-After enable spring-boot-up-data-mongodb, we only need to focus on the relationships between documents.
+After spring-boot-up-data-mongodb, we only need to focus on the relationships between documents:
 ```java
+car.setGasTank(gasTank);
 car.setEngine(engine);
 engine.setMotor(motor);
-car.setGasTank(gasTank);
 car.setWheels(wheels);
 
 carRepository.save(car);
@@ -68,7 +74,8 @@ public class MyConfiguration {}
 
 ```java
 @Repository
-public interface CarRepository extends MongoRepository<Car, String> {}
+public interface CarRepository extends MongoRepository<Car, String>, MongoProjectionRepository<Car>  {} // With projection feature
+// public interface CarRepository extends MongoRepository<Car, String> {} // Without projection feature
 ```
 
 # Feature List<a id='top'></a>
@@ -79,7 +86,7 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 | [Projection](#3.0.0-3) | Projection feature supports both QueryDSL Predicate and Spring Data Query | v3.0.0 |
 
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
-Entity.
+Entity:
 ```java
 @Document
 public class Car {
@@ -96,7 +103,20 @@ public class Car {
 
   @CascadeRef
   @DBRef
-  List<Wheel> frontWheels = new ArrayList<>();
+  List<Wheel> wheels = new ArrayList<>();
+}
+```
+```java
+@Document
+public class GasTank {
+  @Id
+  String id;
+
+  @ParentRef
+  @DBRef
+  Car car;
+
+  double capacity = 100;
 }
 ```
 ```java
@@ -109,26 +129,11 @@ public class Engine {
   @DBRef
   Car car;
 
-  double horsePower;
+  double horsePower = 500;
 
   @CascadeRef
   @DBRef
   Motor motor;
-}
-```
-```java
-@Document
-public class GasTank {
-
-  @Id
-  String id;
-
-  @ParentRef
-  @DBRef
-  Car car;
-
-  double capacity;
-
 }
 ```
 ```java
@@ -141,7 +146,7 @@ public class Motor {
   @DBRef
   Engine engine;
 
-  double rpm;
+  double rpm = 60000;
 }
 ```
 ```java
@@ -151,46 +156,40 @@ public class Wheel {
   String id;
 
   @ParentRef
-  @DBRef(lazy = true)
+  @DBRef
   Car car;
 
   String tireBrand;
-
-  public Wheel() {}
-
-  public Wheel(String tireBrand) {
-    this.tireBrand = tireBrand;
-  }
 }
 ```
 
-Operation.
+Operation:
 ```java
+car.setGasTank(gasTank);
 car.setEngine(engine);
 engine.setMotor(motor);
-car.setGasTank(gasTank);
 car.setWheels(wheels);
 carRepository.save(car);
 
 carRepository.count(); // 1
+gasTankRepository.count(); // 1
 engineRepository.count(); // 1
 motorRepository.count(); // 1
-gasTankRepository.count(); // 1
 wheelRepository.count(); // 4
 
 carRepository.delete(car);
 carRepository.count(); // 0
+gasTankRepository.count(); // 0
 engineRepository.count(); // 0
 motorRepository.count(); // 0
-gasTankRepository.count(); // 0
 wheelRepository.count(); // 0
 ```
 
-#### Cascading is Not working on BulkOpertaion
+#### Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll)
 ```java
+car.setGasTank(gasTank);
 car.setEngine(engine);
 engine.setMotor(motor);
-car.setGasTank(gasTank);
 car.setWheels(wheels);
 carRepository.save(car);
 
@@ -201,12 +200,17 @@ motorRepository.count(); // 1
 gasTankRepository.count(); // 1
 wheelRepository.count(); // 4
 ```
+```diff
++ Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances
+```
 
 ### [:top:](#top) Annotation Driven Event<a id='3.0.0-2'></a>
-Entity.
+Entity:
 ```java
 @Document
 public class Car {
+  @Id
+  String id;
 
   @AfterConvertFromMongo
   void afterConvert() {
@@ -267,13 +271,14 @@ public class Car {
   void afterDeleteFromMongoArg(SourceAndDocument sad) {
     var car = sad.getSource(Car.class);
   }
-
 }
 ```
-Annotation Driven Event won't be triggered under Mongo bulk operations.
+```diff
+- Annotation Driven Event won't be triggered under Mongo bulk operations.
+```
 
 ### [:top:](#top) Projection<a id='3.0.0-3'></a>
-Entity.
+Entity:
 ```java
 @Document
 public class ComplexModel {
@@ -305,13 +310,7 @@ public class ProjectModel {
 
 ```
 
-Config.
-```java
-@Repository
-public interface CarRepository extends MongoRepository<Car, String>, MongoProjectionRepository<Car>  {}
-```
-
-Init.
+Init:
 ```java
 var model = new ComplexModel();
 model.setStr("str");
@@ -325,7 +324,7 @@ model.setNested(nested);
 complexModelRepository.save(model);
 ```
 
-Projection can be performed by 3 ways.
+Projection can be performed by 3 ways:
 ```java
 // By dot path - allows to use dot operator(.) to represent nested projection object
 complexModelRepository.findAllProjectedBy("str");
