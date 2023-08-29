@@ -18,15 +18,15 @@ public class Car {
   @Id
   String id;
 
-  @CascadeRef({CascadeType.CREATE})
+  @CascadeRef({CascadeType.CREATE, CascadeType.DELETE})
   @DBRef
   Engine engine;
 
-  @CascadeRef({CascadeType.CREATE, CascadeType.DELETE})
+  @CascadeRef({CascadeType.CREATE})
   @DBRef
   GasTank gasTank;
 
-  @CascadeRef({CascadeType.CREATE, CascadeType.UPDATE})
+  @CascadeRef // Equivalent to @CascadeRef(CascadeType.ALL)
   @DBRef
   List<Wheel> wheels = new ArrayList<>();
 

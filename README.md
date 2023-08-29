@@ -81,9 +81,11 @@ public interface CarRepository extends MongoRepository<Car, String>, MongoProjec
 # Feature List<a id='top'></a>
 | Name | Description | Since |
 | --- | --- | --- |
-| [Cascade(@CascadeRef, @ParentRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
-| [Annotation Driven Event](#3.0.0-2) | Annotation Driven Event feature for Mongo Event  | v3.0.0 |
-| [Projection](#3.0.0-3) | Projection feature supports both QueryDSL Predicate and Spring Data Query | v3.0.0 |
+| [Cascade(@CascadeRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
+| [@ParentRef](#3.0.0-2) | Automatically populates the cascade publisher object into @ParentRef annotated field of the cascade receiver | v3.0.0 |
+| [Annotation Driven Event](#3.0.0-3) | Annotation Driven Event feature for Mongo Event | v3.0.0 |
+| [Projection](#3.0.0-4) | Projection feature supports both QueryDSL Predicate and Spring Data Query | v3.0.0 |
+| [Custom Conversions](#3.0.0-5) | MongoCustomConversions for Java 8 time | v3.0.0 |
 
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
 Entity:
@@ -93,17 +95,21 @@ public class Car {
   @Id
   String id;
 
-  @CascadeRef({CascadeType.CREATE})
+  @CascadeRef({CascadeType.CREATE, CascadeType.DELETE})
   @DBRef
   Engine engine;
 
-  @CascadeRef({CascadeType.CREATE, CascadeType.DELETE})
+  @CascadeRef({CascadeType.CREATE})
   @DBRef
   GasTank gasTank;
 
-  @CascadeRef({CascadeType.CREATE, CascadeType.UPDATE})
+  @CascadeRef // Equivalent to @CascadeRef(CascadeType.ALL)
   @DBRef
   List<Wheel> wheels = new ArrayList<>();
+
+  @CascadeRef({CascadeType.UPDATE, CascadeType.DELETE})
+  @DBRef
+  GasTank subGasTank;
 }
 ```
 ```java
@@ -192,6 +198,68 @@ assertEquals(1, motorRepository.count());
 assertEquals(4, wheelRepository.count());
 ```
 
+Test CascadeType.UPDATE
+```java
+car = new Car();
+var subGasTank = new GasTank();
+car.setSubGasTank(subGasTank);
+// Because this car object hasn't been saved, so the CascadeType.UPDATE about the subGasTank object won't be performed
+assertThrows(RuntimeException.class, () -> {
+  carRepository.save(car);
+});
+
+car = new Car();
+carRepository.save(car);
+var subGasTank = new GasTank();
+car.setSubGasTank(subGasTank);
+carRepository.save(car);
+// Because this car object has been saved, so the CascadeType.UPDATE is performed
+assertSame(subGasTank, car.getSubGasTank());
+```
+
+Test CascadeType.UPDATE
+```java
+carRepository.deleteAll();
+assertEquals(0, carRepository.count());
+assertEquals(1, engineRepository.count());
+assertEquals(1, motorRepository.count());
+assertEquals(1, gasTankRepository.count());
+assertEquals(4, wheelRepository.count());
+```
+```diff
+- Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll)
+```
+```java
+carRepository.deleteAll(carRepository.findAll()); 
+assertEquals(0, carRepository.count());
+assertEquals(1, engineRepository.count());
+assertEquals(1, motorRepository.count());
+assertEquals(1, gasTankRepository.count());
+assertEquals(4, wheelRepository.count());
+```
+```diff
++ Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances
+```
+
+### [:top:](#top) @ParentRef<a id='3.0.0-2'></a>
+For example, Car object publishes cascade event to GasTank object,<br>
+so Car object can be treated as a parent of GasTank object,<br>
+therefore the field of a GasTank, which is annotated by @ParentRef,<br>
+will be set by Car object automatically.
+```java
+@Document
+public class GasTank {
+  @Id
+  String id;
+
+  @ParentRef
+  @DBRef
+  Car car;
+
+  double capacity = 100;
+}
+```
+
 Test @ParentRef
 ```java
 assertSame(car, gasTank.getCar());
@@ -204,26 +272,7 @@ assertSame(car, rareRightWheel.getCar());
 assertSame(car, rareLeftWheel.getCar());
 ```
 
-#### Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll)
-```java
-car.setGasTank(gasTank);
-car.setEngine(engine);
-engine.setMotor(motor);
-car.setWheels(wheels);
-carRepository.save(car);
-
-carRepository.deleteAll(); // Instead, carRepository.deleteAll(carRepository.findAll()) is working well
-carRepository.count(); // 0
-engineRepository.count(); // 1
-motorRepository.count(); // 1
-gasTankRepository.count(); // 1
-wheelRepository.count(); // 4
-```
-```diff
-+ Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances
-```
-
-### [:top:](#top) Annotation Driven Event<a id='3.0.0-2'></a>
+### [:top:](#top) Annotation Driven Event<a id='3.0.0-3'></a>
 Entity:
 ```java
 @Document
@@ -296,7 +345,7 @@ public class Car {
 - Annotation Driven Event won't be triggered under Mongo bulk operations.
 ```
 
-### [:top:](#top) Projection<a id='3.0.0-3'></a>
+### [:top:](#top) Projection<a id='3.0.0-4'></a>
 Entity:
 ```java
 @Document
@@ -389,6 +438,17 @@ carRepository.findAllProjectedBy(ProjectModel.class);
 // assertNull(model.getD());
 // assertNull(model.getB());
 // assertNull(model.getNested());
+```
+
+### [:top:](#top) Custom Conversions<a id='3.0.0-5'></a>
+```java
+@Configuration
+public class MongoConfig extends AbstractMongoClientConfiguration {
+  @Override
+  public MongoCustomConversions customConversions() {
+    return MongoConverters.javaTimeConversions();
+  }
+}
 ```
 
 ## MISC

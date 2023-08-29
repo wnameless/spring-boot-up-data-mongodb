@@ -64,6 +64,18 @@ public class GithubTest {
   }
 
   @Test
+  public void testParentRef() {
+    assertSame(car, gasTank.getCar());
+    assertSame(car, engine.getCar());
+    assertSame(car, motor.getCar());
+    assertSame(engine, motor.getEngine());
+    assertSame(car, frontRightWheel.getCar());
+    assertSame(car, frontLeftWheel.getCar());
+    assertSame(car, rareRightWheel.getCar());
+    assertSame(car, rareLeftWheel.getCar());
+  }
+
+  @Test
   public void testCascadeCreate() {
     assertEquals(1, carRepository.count());
     assertEquals(1, gasTankRepository.count());
@@ -98,15 +110,23 @@ public class GithubTest {
   }
 
   @Test
-  public void testParentRef() {
-    assertSame(car, gasTank.getCar());
-    assertSame(car, engine.getCar());
-    assertSame(car, motor.getCar());
-    assertSame(engine, motor.getEngine());
-    assertSame(car, frontRightWheel.getCar());
-    assertSame(car, frontLeftWheel.getCar());
-    assertSame(car, rareRightWheel.getCar());
-    assertSame(car, rareLeftWheel.getCar());
+  public void testCascadeDeleteAll() {
+    carRepository.deleteAll();
+    assertEquals(0, carRepository.count());
+    assertEquals(1, engineRepository.count());
+    assertEquals(1, motorRepository.count());
+    assertEquals(1, gasTankRepository.count());
+    assertEquals(4, wheelRepository.count());
+  }
+
+  @Test
+  public void testCascadeDeleteAllWithIterable() {
+    carRepository.deleteAll(carRepository.findAll());
+    assertEquals(0, carRepository.count());
+    assertEquals(0, engineRepository.count());
+    assertEquals(0, motorRepository.count());
+    assertEquals(1, gasTankRepository.count());
+    assertEquals(0, wheelRepository.count());
   }
 
 }
