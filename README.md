@@ -79,7 +79,7 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 | [Projection](#3.0.0-3) | Projection feature supports both QueryDSL projection and Spring Data Query | v3.0.0 |
 
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
-Entity
+Entity.
 ```java
 @Document
 public class Car {
