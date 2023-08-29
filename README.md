@@ -217,7 +217,7 @@ carRepository.save(car);
 assertSame(subGasTank, car.getSubGasTank());
 ```
 
-Test CascadeType.UPDATE
+Test CascadeType.DELETE
 ```java
 carRepository.deleteAll();
 assertEquals(0, carRepository.count());
@@ -232,10 +232,10 @@ assertEquals(4, wheelRepository.count());
 ```java
 carRepository.deleteAll(carRepository.findAll()); 
 assertEquals(0, carRepository.count());
-assertEquals(1, engineRepository.count());
-assertEquals(1, motorRepository.count());
-assertEquals(1, gasTankRepository.count());
-assertEquals(4, wheelRepository.count());
+assertEquals(0, engineRepository.count());
+assertEquals(0, motorRepository.count());
+assertEquals(1, gasTankRepository.count()); // gasTank only annotated with @CascadeRef(CascadeType.CREATE)
+assertEquals(0, wheelRepository.count());
 ```
 ```diff
 + Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances
