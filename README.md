@@ -18,7 +18,16 @@ var rareLeftWheel = new Wheel();
 var wheels = Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel);
 ```
 
-Before intoducing this lib, we have to create and save documents before constructing the `@DBRef`:
+Entity relationship model:
+```mermaid
+graph TD;
+    Car-->GasTank;
+    Car-->Engine;
+    Engine-->Motor;
+    Car-->Wheel;
+```
+
+___Before___ intoducing this lib, we have to save all documents before constructing the `@DBRef`.
 ```java
 carRepository.save(car);
 
@@ -46,7 +55,7 @@ car.setWheels(wheels);
 carRepository.save(car);
 ```
 
-After intoducing this lib, we only need to focus on the relationships between documents:
+___After___ intoducing this lib, we only need to focus on the relationships between documents.
 ```java
 car.setGasTank(gasTank);
 car.setEngine(engine);
