@@ -498,7 +498,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
   }
 }
 ```
-All Java 8 Date/Time types are converted to `String`, and vice versa.
+All Java 8 Date/Time types(excluding DayOfWeek and Month Enums) are converted to `String`, and vice versa.
 
 ## MISC
 | Note| Since |

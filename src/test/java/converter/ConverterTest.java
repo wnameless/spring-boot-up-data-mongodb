@@ -2,13 +2,11 @@ package converter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
 import java.time.MonthDay;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
@@ -19,8 +17,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import org.junit.jupiter.api.Test;
-import com.github.wnameless.spring.boot.up.data.mongodb.converter.DayOfWeekReadConverter;
-import com.github.wnameless.spring.boot.up.data.mongodb.converter.DayOfWeekWriteConverter;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.DurationReadConverter;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.DurationWriteConverter;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.InstantReadConverter;
@@ -34,8 +30,6 @@ import com.github.wnameless.spring.boot.up.data.mongodb.converter.LocalTimeWrite
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.MongoConverters;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.MonthDayReadConverter;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.MonthDayWriteConverter;
-import com.github.wnameless.spring.boot.up.data.mongodb.converter.MonthReadConverter;
-import com.github.wnameless.spring.boot.up.data.mongodb.converter.MonthWriteConverter;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.OffsetDateTimeReadConverter;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.OffsetDateTimeWriteConverter;
 import com.github.wnameless.spring.boot.up.data.mongodb.converter.OffsetTimeReadConverter;
@@ -88,14 +82,6 @@ public class ConverterTest {
         MongoConverters.javaTimeConversions().hasCustomWriteTarget(MonthDay.class, String.class));
     assertTrue(MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class,
         ZonedDateTime.class));
-    assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomWriteTarget(Month.class, String.class));
-    assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class, Month.class));
-    assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomWriteTarget(DayOfWeek.class, String.class));
-    assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class, DayOfWeek.class));
     assertTrue(
         MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class, Period.class));
     assertTrue(
@@ -197,24 +183,6 @@ public class ConverterTest {
     assertEquals(time, reader.convert(time.toString()));
     var writer = new MonthDayWriteConverter();
     assertEquals(time.toString(), writer.convert(time));
-  }
-
-  @Test
-  public void testMonthConverter() {
-    var time = Month.of(1);
-    var reader = new MonthReadConverter();
-    assertEquals(time, reader.convert(time.name()));
-    var writer = new MonthWriteConverter();
-    assertEquals(time.name(), writer.convert(time));
-  }
-
-  @Test
-  public void testDayOfWeekConverter() {
-    var time = DayOfWeek.MONDAY;
-    var reader = new DayOfWeekReadConverter();
-    assertEquals(time, reader.convert(time.name()));
-    var writer = new DayOfWeekWriteConverter();
-    assertEquals(time.name(), writer.convert(time));
   }
 
   @Test

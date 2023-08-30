@@ -29,10 +29,6 @@ public final class MongoConverters {
     converters.add(new OffsetDateTimeReadConverter());
     converters.add(new MonthDayWriteConverter());
     converters.add(new MonthDayReadConverter());
-    converters.add(new MonthWriteConverter());
-    converters.add(new MonthReadConverter());
-    converters.add(new DayOfWeekWriteConverter());
-    converters.add(new DayOfWeekReadConverter());
     converters.add(new PeriodWriteConverter());
     converters.add(new PeriodReadConverter());
     converters.add(new DurationWriteConverter());

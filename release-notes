@@ -1,2 +1,5 @@
 Version 3.0.0
 + First release
+
+Version 3.0.1
+* Remove Java 8 Date/Time DayOfWeek and Month Enums converters
