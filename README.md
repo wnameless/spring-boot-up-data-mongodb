@@ -75,6 +75,9 @@ carRepository.save(car);
 	<!-- Newest version shows in the maven-central badge above -->
 </dependency>
 ```
+```diff
+@@ Maven dependency spring-boot-starter-data-mongodb is required.@@
+```
 The version follows the pattern of {MajorVersion.MinorVersion.IncrementalVersion}.<br>
 However, the MajorVersion is always matched the Spring Boot major version.<br>
 Only MinorVersion and IncrementalVersion are used to represent the changes of this library.
@@ -251,7 +254,7 @@ assertEquals(1, gasTankRepository.count());
 assertEquals(4, wheelRepository.count());
 ```
 ```diff
-- Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll)
+- Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll).
 ```
 ```java
 carRepository.deleteAll(carRepository.findAll()); 
@@ -263,7 +266,7 @@ assertEquals(1, gasTankRepository.count());
 assertEquals(0, wheelRepository.count());
 ```
 ```diff
-+ Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances
++ Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances.
 ```
 
 ### [:top:](#top) @ParentRef<a id='3.0.0-2'></a>
