@@ -76,7 +76,7 @@ carRepository.save(car);
 </dependency>
 ```
 ```diff
-@@ Maven dependency spring-boot-starter-data-mongodb is required.@@
+! Maven dependency spring-boot-starter-data-mongodb is required.
 ```
 The version follows the pattern of {MajorVersion.MinorVersion.IncrementalVersion}.<br>
 However, the MajorVersion is always matched the Spring Boot major version.<br>
