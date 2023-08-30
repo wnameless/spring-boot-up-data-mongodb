@@ -11,7 +11,7 @@
 
   <groupId>com.github.wnameless.spring.boot.up</groupId>
   <artifactId>spring-boot-up-data-mongodb</artifactId>
-  <version>3.0.1</version>
+  <version>3.0.2-SNAPSHOT</version>
 
   <name>spring-boot-up-data-mongodb</name>
   <description>MongoDB enhancement brought by SpringBootUp</description>
@@ -30,7 +30,7 @@
     <connection>scm:git:git@github.com:wnameless/spring-boot-up-data-mongodb.git</connection>
     <developerConnection>scm:git:git@github.com:wnameless/spring-boot-up-data-mongodb.git</developerConnection>
     <url>git@github.com:wnameless/spring-boot-up-data-mongodb.git</url>
-    <tag>spring-boot-up-data-mongodb-3.0.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <developers>
