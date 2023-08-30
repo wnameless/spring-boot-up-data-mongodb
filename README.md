@@ -25,6 +25,7 @@ graph TD;
     Car-->Engine;
     Engine-->Motor;
     Car-->Wheel;
+    Car-->SubGasTank
 ```
 
 ___Before___ intoducing this lib, we have to save all documents before constructing the `@DBRef`.
