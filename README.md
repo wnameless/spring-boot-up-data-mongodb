@@ -18,7 +18,7 @@ var rareLeftWheel = new Wheel();
 var wheels = Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel);
 ```
 
-Before spring-boot-up-data-mongodb, we have to create and save documents before constructing the @DBRef:
+Before intoducing this lib, we have to create and save documents before constructing the `@DBRef`:
 ```java
 carRepository.save(car);
 
@@ -28,11 +28,16 @@ engine.setCar(car);
 engineRepository.save(engine);
 
 motor.setEngine(engine);
+motor.setCar(car);
 motorRepository.save(motor);
 
 engine.setMotor(motor);
 engineRepository.save(engine);
 
+frontRightWheel.setCar(car);
+frontLeftWheel.setCar(car);
+rareRightWheel.setCar(car);
+rareLeftWheel.setCar(car);
 wheelRepository.save(wheels);
 
 car.setGasTank(gasTank);
@@ -41,7 +46,7 @@ car.setWheels(wheels);
 carRepository.save(car);
 ```
 
-After spring-boot-up-data-mongodb, we only need to focus on the relationships between documents:
+After intoducing this lib, we only need to focus on the relationships between documents:
 ```java
 car.setGasTank(gasTank);
 car.setEngine(engine);
@@ -74,8 +79,11 @@ public class MyConfiguration {}
 
 ```java
 @Repository
-public interface CarRepository extends MongoRepository<Car, String>, MongoProjectionRepository<Car>  {} // With projection feature
-// public interface CarRepository extends MongoRepository<Car, String> {} // Without projection feature
+public interface CarRepository extends MongoRepository<Car, String>, MongoProjectionRepository<Car> {}
+// With projection feature
+
+// public interface CarRepository extends MongoRepository<Car, String> {}
+// Without projection feature
 ```
 
 # Feature List<a id='top'></a>
@@ -88,9 +96,11 @@ public interface CarRepository extends MongoRepository<Car, String>, MongoProjec
 | [Custom Conversions](#3.0.0-5) | MongoCustomConversions for Java 8 time | v3.0.0 |
 
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
-Entity:
+Entity classes:
 ```java
-Document
+@EqualsAndHashCode(of = "id")
+@Data
+@Document
 public class Car {
   @Id
   String id;
@@ -113,6 +123,8 @@ public class Car {
 }
 ```
 ```java
+@EqualsAndHashCode(of = "id")
+@Data
 @Document
 public class GasTank {
   @Id
@@ -126,6 +138,8 @@ public class GasTank {
 }
 ```
 ```java
+@EqualsAndHashCode(of = "id")
+@Data
 @Document
 public class Engine {
   @Id
@@ -143,6 +157,8 @@ public class Engine {
 }
 ```
 ```java
+@EqualsAndHashCode(of = "id")
+@Data
 @Document
 public class Motor {
   @Id
@@ -160,6 +176,8 @@ public class Motor {
 }
 ```
 ```java
+@EqualsAndHashCode(of = "id")
+@Data
 @Document
 public class Wheel {
   @Id
@@ -174,13 +192,9 @@ public class Wheel {
 
 ```
 
-BeaforeEach:
+JUnit `BeaforeEach`
 ```java
-carRepository.deleteAll();
-gasTankRepository.deleteAll();
-engineRepository.deleteAll();
-motorRepository.deleteAll();
-wheelRepository.deleteAll();
+mongoTemplate.getDb().drop();
 
 car.setGasTank(gasTank);
 car.setEngine(engine);
@@ -189,7 +203,7 @@ car.setWheels(Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rar
 carRepository.save(car);
 ```
 
-Test CascadeType.CREATE
+Test `CascadeType.CREATE`
 ```java
 assertEquals(1, carRepository.count());
 assertEquals(1, gasTankRepository.count());
@@ -198,7 +212,7 @@ assertEquals(1, motorRepository.count());
 assertEquals(4, wheelRepository.count());
 ```
 
-Test CascadeType.UPDATE
+Test `CascadeType.UPDATE`
 ```java
 car = new Car();
 var subGasTank = new GasTank();
@@ -217,7 +231,7 @@ carRepository.save(car);
 assertSame(subGasTank, car.getSubGasTank());
 ```
 
-Test CascadeType.DELETE
+Test `CascadeType.DELETE`
 ```java
 carRepository.deleteAll();
 assertEquals(0, carRepository.count());
@@ -234,7 +248,8 @@ carRepository.deleteAll(carRepository.findAll());
 assertEquals(0, carRepository.count());
 assertEquals(0, engineRepository.count());
 assertEquals(0, motorRepository.count());
-assertEquals(1, gasTankRepository.count()); // gasTank only annotated with @CascadeRef(CascadeType.CREATE)
+assertEquals(1, gasTankRepository.count());
+// gasTank won't be deleted because it's only annotated with @CascadeRef(CascadeType.CREATE)
 assertEquals(0, wheelRepository.count());
 ```
 ```diff
@@ -242,11 +257,14 @@ assertEquals(0, wheelRepository.count());
 ```
 
 ### [:top:](#top) @ParentRef<a id='3.0.0-2'></a>
-For example, Car object publishes cascade event to GasTank object,<br>
-so Car object can be treated as a parent of GasTank object,<br>
-therefore the field of a GasTank, which is annotated by @ParentRef,<br>
+For example:<br>
+Car object publishes cascade events to GasTank object,
+so Car object can be treated as a _parent_ of GasTank object,
+therefore the field of a GasTank, which is annotated by `@ParentRef`,
 will be set by Car object automatically.
 ```java
+@EqualsAndHashCode(of = "id")
+@Data
 @Document
 public class GasTank {
   @Id
@@ -260,7 +278,7 @@ public class GasTank {
 }
 ```
 
-Test @ParentRef
+Test `@ParentRef`
 ```java
 assertSame(car, gasTank.getCar());
 assertSame(car, engine.getCar());
@@ -273,20 +291,32 @@ assertSame(car, rareLeftWheel.getCar());
 ```
 
 ### [:top:](#top) Annotation Driven Event<a id='3.0.0-3'></a>
-Entity:
+There are 6 types of annotation driven events:
+
+* BeforeConvertToMongo
+* BeforeSaveToMongo
+* AfterSaveToMongo
+* AfterConvertFromMongo
+* BeforeDeleteFromMongo
+* AfterDeleteFromMongo
+
+
+All annotated methods will be triggered in corresponding MongoDB events lifecycle.
+Annotated methods can only accept empty or single `SourceAndDocument` as argument.
+`SourceAndDocument` stores both the event source object and event BSON Document at that point.
 ```java
 @Document
 public class Car {
   @Id
   String id;
 
-  @AfterConvertFromMongo
-  void afterConvert() {
-    System.out.println("afterConvertFromMongo");
+  @BeforeConvertToMongo
+  void beforeConvert() {
+    System.out.println("beforeConvertToMongo");
   }
 
-  @AfterConvertFromMongo
-  void afterConvertArg(SourceAndDocument sad) {
+  @BeforeConvertToMongo
+  void beforeConvertArg(SourceAndDocument sad) {
     var car = sad.getSource(Car.class);
   }
 
@@ -310,13 +340,13 @@ public class Car {
     var car = sad.getSource(Car.class);
   }
 
-  @BeforeConvertToMongo
-  void beforeConvert() {
-    System.out.println("beforeConvertToMongo");
+  @AfterConvertFromMongo
+  void afterConvert() {
+    System.out.println("afterConvertFromMongo");
   }
 
-  @BeforeConvertToMongo
-  void beforeConvertArg(SourceAndDocument sad) {
+  @AfterConvertFromMongo
+  void afterConvertArg(SourceAndDocument sad) {
     var car = sad.getSource(Car.class);
   }
 
@@ -346,8 +376,10 @@ public class Car {
 ```
 
 ### [:top:](#top) Projection<a id='3.0.0-4'></a>
-Entity:
+Entity classes:
 ```java
+@EqualsAndHashCode(of = "id")
+@Data
 @Document
 public class ComplexModel {
   @Id
@@ -365,6 +397,7 @@ public class ComplexModel {
 }
 ```
 ```java
+@Data
 public class NestedModel {
   Float f;
 
@@ -372,10 +405,10 @@ public class NestedModel {
 }
 ```
 ```java
+@Data
 public class ProjectModel {
   String str;
 }
-
 ```
 
 Init:
@@ -441,6 +474,8 @@ carRepository.findAllProjectedBy(ProjectModel.class);
 ```
 
 ### [:top:](#top) Custom Conversions<a id='3.0.0-5'></a>
+MongoDB doesn't natively support Java 8 time(Ex: `LocalDateTime`), so here is a convenient solution.
+`MongoConverters.javaTimeConversions()` includes all types of read and write `Converter` for Java 8 time.
 ```java
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
@@ -450,6 +485,8 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
   }
 }
 ```
+Month and DayOfWeek are converted to `Integer`.
+Others are converted to `String`.
 
 ## MISC
 | Note| Since |

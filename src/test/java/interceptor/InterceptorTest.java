@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.github.wnameless.spring.boot.up.data.mongodb.interceptor.SourceAndDocument;
 import com.jparams.verifier.tostring.ToStringVerifier;
@@ -31,10 +32,12 @@ public class InterceptorTest {
   @Autowired
   BeforeAfterDeleteModelRepository beforeAfterDeleteModelRepository;
 
+  @Autowired
+  MongoTemplate mongoTemplate;
+
   @BeforeEach
   public void cleanUp() {
-    beforeAfterModelRepository.deleteAll();
-    beforeAfterDeleteModelRepository.deleteAll();
+    mongoTemplate.getDb().drop();
     messages.clear();
     sads.clear();
   }

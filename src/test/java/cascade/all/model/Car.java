@@ -12,7 +12,7 @@ import com.github.wnameless.spring.boot.up.data.mongodb.cascade.annotation.Casca
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = false, of = {"id"})
+@EqualsAndHashCode(of = "id")
 @Data
 @Document
 public class Car {

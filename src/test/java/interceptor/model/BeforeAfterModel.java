@@ -11,7 +11,7 @@ import interceptor.InterceptorTest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = false, of = {"id"})
+@EqualsAndHashCode(of = "id")
 @Data
 @Document
 public class BeforeAfterModel {
