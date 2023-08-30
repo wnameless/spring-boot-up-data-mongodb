@@ -106,7 +106,7 @@ public interface CarRepository extends MongoRepository<Car, String>, MongoProjec
 | [@ParentRef](#3.0.0-2) | Automatically populates the cascade publisher object into @ParentRef annotated field of the cascade receiver | v3.0.0 |
 | [Annotation Driven Event](#3.0.0-3) | Annotation Driven Event feature for Mongo Event | v3.0.0 |
 | [Projection](#3.0.0-4) | Projection feature supports both QueryDSL Predicate and Spring Data Query | v3.0.0 |
-| [Custom Conversions](#3.0.0-5) | MongoCustomConversions for Java 8 time | v3.0.0 |
+| [Custom Conversions](#3.0.0-5) | MongoCustomConversions for Java 8 Date/Time | v3.0.0 |
 
 ### [:top:](#top) Cascade<a id='3.0.0-1'></a>
 Entity classes:
@@ -487,8 +487,8 @@ carRepository.findAllProjectedBy(ProjectModel.class);
 ```
 
 ### [:top:](#top) Custom Conversions<a id='3.0.0-5'></a>
-MongoDB doesn't natively support Java 8 time(Ex: `LocalDateTime`), so here is a convenient solution.
-`MongoConverters.javaTimeConversions()` includes all types of read and write `Converter` for Java 8 time.
+MongoDB doesn't natively support Java 8 Date/Time(Ex: `LocalDateTime`), so here is a convenient solution.
+`MongoConverters.javaTimeConversions()` includes all types of `Converter` for Java 8 Date/Time.
 ```java
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
@@ -498,8 +498,7 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
   }
 }
 ```
-Month and DayOfWeek are converted to `Integer`.
-Others are converted to `String`.
+All Java 8 Date/Time types are converted to `String`, and vice versa.
 
 ## MISC
 | Note| Since |

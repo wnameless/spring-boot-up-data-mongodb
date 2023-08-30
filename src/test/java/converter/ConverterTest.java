@@ -89,13 +89,13 @@ public class ConverterTest {
     assertTrue(MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class,
         ZonedDateTime.class));
     assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomWriteTarget(Month.class, Integer.class));
+        MongoConverters.javaTimeConversions().hasCustomWriteTarget(Month.class, String.class));
     assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomReadTarget(Integer.class, Month.class));
+        MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class, Month.class));
     assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomWriteTarget(DayOfWeek.class, Integer.class));
+        MongoConverters.javaTimeConversions().hasCustomWriteTarget(DayOfWeek.class, String.class));
     assertTrue(
-        MongoConverters.javaTimeConversions().hasCustomReadTarget(Integer.class, DayOfWeek.class));
+        MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class, DayOfWeek.class));
     assertTrue(
         MongoConverters.javaTimeConversions().hasCustomReadTarget(String.class, Period.class));
     assertTrue(
@@ -203,18 +203,18 @@ public class ConverterTest {
   public void testMonthConverter() {
     var time = Month.of(1);
     var reader = new MonthReadConverter();
-    assertEquals(time, reader.convert(time.getValue()));
+    assertEquals(time, reader.convert(time.name()));
     var writer = new MonthWriteConverter();
-    assertEquals(time.getValue(), writer.convert(time));
+    assertEquals(time.name(), writer.convert(time));
   }
 
   @Test
   public void testDayOfWeekConverter() {
     var time = DayOfWeek.MONDAY;
     var reader = new DayOfWeekReadConverter();
-    assertEquals(time, reader.convert(time.getValue()));
+    assertEquals(time, reader.convert(time.name()));
     var writer = new DayOfWeekWriteConverter();
-    assertEquals(time.getValue(), writer.convert(time));
+    assertEquals(time.name(), writer.convert(time));
   }
 
   @Test
