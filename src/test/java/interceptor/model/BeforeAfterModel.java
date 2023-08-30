@@ -29,16 +29,6 @@ public class BeforeAfterModel {
     InterceptorTest.sads.add(sad);
   }
 
-  @AfterConvertFromMongo
-  void afterConvert() {
-    InterceptorTest.messages.add("afterConvertFromMongo");
-  }
-
-  @AfterConvertFromMongo
-  void afterConvertArg(SourceAndDocument sad) {
-    InterceptorTest.sads.add(sad);
-  }
-
   @BeforeSaveToMongo
   void beforeSave() {
     InterceptorTest.messages.add("beforeSaveToMongo");
@@ -58,5 +48,16 @@ public class BeforeAfterModel {
   void afterSaveArg(SourceAndDocument sad) {
     InterceptorTest.sads.add(sad);
   }
+
+  @AfterConvertFromMongo
+  void afterConvert() {
+    InterceptorTest.messages.add("afterConvertFromMongo");
+  }
+
+  @AfterConvertFromMongo
+  void afterConvertArg(SourceAndDocument sad) {
+    InterceptorTest.sads.add(sad);
+  }
+
 
 }
