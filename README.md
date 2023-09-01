@@ -78,9 +78,8 @@ carRepository.save(car);
 ```diff
 ! Maven dependency spring-boot-starter-data-mongodb is required.
 ```
-The version follows the pattern of {MajorVersion.MinorVersion.IncrementalVersion}.<br>
-However, the MajorVersion is always matched the Spring Boot major version.<br>
-Only MinorVersion and IncrementalVersion are used to represent the changes of this library.
+This lib uses Semantic Versioning: `{MAJOR.MINOR.PATCH}`.<br>
+However, the MAJOR version is always matched the Spring Boot MAJOR version.
 
 # Quick Start
 ```java
