@@ -267,7 +267,7 @@ assertSame(subGasTank, car.getSubGasTank());
 The main diffrence between `CascadeType.UPDATE` and plain `@DBREf` is that<br>
 `CascadeType.UPDATE` allows unsaved documents to be set in `@DBREf` fields but plain `@DBREf` won't.
 ```diff
-! When @DBRef is established, all field updates will be cascaded mandatory in @DBRef's nature 
+@@ CascadeType.UPDATE won't change the behaviour in @DBRef's nature @@
 ```
 
 Test `CascadeType.DELETE`
