@@ -2,9 +2,20 @@
 
 spring-boot-up-data-mongodb
 =============
-MongoDB enhancement brought by SpringBootUp.
+MongoDB enhancement brought by spring-boot-up.
 
-## Purpose - reduces the boilerplate code followed by Spring @DBRef
+## Goal - introducing `Cascade` and more features into Spring MongoDB
+## Purpose - reduces the boilerplate codes followed by Spring `@DBRef`
+Entity relationship model:
+```mermaid
+graph TD;
+    Car-->GasTank;
+    Car-->Engine;
+    Engine-->Motor;
+    Car-->Wheel;
+    Car-->SubGasTank
+```
+
 Init:
 ```java
 var car  = new Car();
@@ -18,46 +29,47 @@ var rareLeftWheel = new Wheel();
 var wheels = Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel);
 ```
 
-Entity relationship model:
-```mermaid
-graph TD;
-    Car-->GasTank;
-    Car-->Engine;
-    Engine-->Motor;
-    Car-->Wheel;
-    Car-->SubGasTank
-```
-
-___Before___ intoducing this lib, we have to save all documents before constructing the `@DBRef`.
+___Before___ spring-boot-up-data-mongodb:
 ```java
+// Must save all documents before assigning @DBRef fields
+
+// Create Car
 carRepository.save(car);
 
+// Create GasTank with Car ref
+gasTank.set(car);
 gasTankRepository.save(gasTank);
 
+// Create Engine with Car ref
 engine.setCar(car);
 engineRepository.save(engine);
 
+// Create Motor with Engine and Car ref
 motor.setEngine(engine);
 motor.setCar(car);
 motorRepository.save(motor);
 
+// Update Engine with Motor ref
 engine.setMotor(motor);
 engineRepository.save(engine);
 
+// Create Wheel(s) with Car ref
 frontRightWheel.setCar(car);
 frontLeftWheel.setCar(car);
 rareRightWheel.setCar(car);
 rareLeftWheel.setCar(car);
 wheelRepository.save(wheels);
 
+// Update Car with GasTank, Engine and Wheel(s) ref
 car.setGasTank(gasTank);
 car.setEngine(engine);
 car.setWheels(wheels);
 carRepository.save(car);
 ```
 
-___After___ intoducing this lib, we only need to focus on the relationships between documents.
+___After___ spring-boot-up-data-mongodb:
 ```java
+// Only need to focus on the relationships between documents
 car.setGasTank(gasTank);
 car.setEngine(engine);
 engine.setMotor(motor);
@@ -75,11 +87,11 @@ carRepository.save(car);
 	<!-- Newest version shows in the maven-central badge above -->
 </dependency>
 ```
-```diff
-! Maven dependency spring-boot-starter-data-mongodb is required.
-```
 This lib uses Semantic Versioning: `{MAJOR.MINOR.PATCH}`.<br>
 However, the MAJOR version is always matched the Spring Boot MAJOR version.
+```diff
+! Maven dependency spring-boot-starter-data-mongodb is required
+```
 
 # Quick Start
 ```java
@@ -102,12 +114,15 @@ public interface CarRepository extends MongoRepository<Car, String>, MongoProjec
 | Name | Description | Since |
 | --- | --- | --- |
 | [Cascade(@CascadeRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
-| [@ParentRef](#3.0.0-2) | Automatically populates the cascade publisher object into @ParentRef annotated field of the cascade receiver | v3.0.0 |
-| [Annotation Driven Event](#3.0.0-3) | Annotation Driven Event feature for Mongo Event | v3.0.0 |
-| [Projection](#3.0.0-4) | Projection feature supports both QueryDSL Predicate and Spring Data Query | v3.0.0 |
+| [@ParentRef](#3.0.0-2) | Automatically set the cascade event publisher object into `@ParentRef` annotated field of the cascade event receiver | v3.0.0 |
+| [Annotation Driven Event](#3.0.0-3) | Annotation Driven Event feature for `MongoEvent` | v3.0.0 |
+| [Projection](#3.0.0-4) | Projection feature supports both QueryDSL `Predicate` and Spring Data `Query` | v3.0.0 |
 | [Custom Conversions](#3.0.0-5) | MongoCustomConversions for Java 8 Date/Time | v3.0.0 |
 
-### [:top:](#top) Cascade<a id='3.0.0-1'></a>
+### [:top:](#top) Cascade(@CascadeRef)<a id='3.0.0-1'></a>
+```diff
++ @CascadeRef must annotate alongside @DBRef
+```
 Entity classes:
 ```java
 @EqualsAndHashCode(of = "id")
@@ -121,7 +136,7 @@ public class Car {
   @DBRef
   Engine engine;
 
-  @CascadeRef({CascadeType.CREATE})
+  @CascadeRef(CascadeType.CREATE)
   @DBRef
   GasTank gasTank;
 
@@ -206,7 +221,7 @@ public class Wheel {
 
 JUnit `BeaforeEach`
 ```java
-mongoTemplate.getDb().drop();
+mongoTemplate.getDb().drop(); // reset DB before each test
 
 car.setGasTank(gasTank);
 car.setEngine(engine);
@@ -242,6 +257,11 @@ carRepository.save(car);
 // Because this car object has been saved, so the CascadeType.UPDATE is performed
 assertSame(subGasTank, car.getSubGasTank());
 ```
+The main diffrence between `CascadeType.UPDATE` and plain `@DBREf` is that<br>
+`CascadeType.UPDATE` allows unsaved documents to be set in `@DBREf` fields but plain `@DBREf` won't.
+```diff
+! When @DBRef is established, all field updates will be cascaded mandatory in @DBRef's nature 
+```
 
 Test `CascadeType.DELETE`
 ```java
@@ -253,7 +273,7 @@ assertEquals(1, gasTankRepository.count());
 assertEquals(4, wheelRepository.count());
 ```
 ```diff
-- Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll).
+- Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll)
 ```
 ```java
 carRepository.deleteAll(carRepository.findAll()); 
@@ -265,7 +285,7 @@ assertEquals(1, gasTankRepository.count());
 assertEquals(0, wheelRepository.count());
 ```
 ```diff
-+ Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances.
++ Using CrudRepository#deleteAll(Iterable) instead of CrudRepository#deleteAll can perform cascade normally in most circumstances
 ```
 
 ### [:top:](#top) @ParentRef<a id='3.0.0-2'></a>
@@ -303,7 +323,7 @@ assertSame(car, rareLeftWheel.getCar());
 ```
 
 ### [:top:](#top) Annotation Driven Event<a id='3.0.0-3'></a>
-There are 6 types of annotation driven events:
+6 types of annotation driven events are supported:
 
 * BeforeConvertToMongo
 * BeforeSaveToMongo
@@ -315,7 +335,7 @@ There are 6 types of annotation driven events:
 
 All annotated methods will be triggered in corresponding MongoDB events lifecycle.
 Annotated methods can only accept empty or single `SourceAndDocument` as argument.
-`SourceAndDocument` stores both the event source object and event BSON Document at that point.
+`SourceAndDocument` stores both event source object and event BSON Document at that point.
 ```java
 @Document
 public class Car {
@@ -384,7 +404,7 @@ public class Car {
 }
 ```
 ```diff
-- Annotation Driven Event won't be triggered under Mongo bulk operations.
+- Annotation Driven Event won't be triggered under Mongo bulk operations
 ```
 
 ### [:top:](#top) Projection<a id='3.0.0-4'></a>
@@ -437,52 +457,58 @@ model.setNested(nested);
 complexModelRepository.save(model);
 ```
 
-Projection can be performed by 3 ways:
+#### Projection can be performed by 3 ways:
+Approach 1: dot path 
 ```java
-// By dot path - allows to use dot operator(.) to represent nested projection object
-complexModelRepository.findAllProjectedBy("str");
-
+// Use dot operator(.) to represent nested projection object
+var projected = complexModelRepository.findProjectedBy("str");
+var nestedProjected = complexModelRepository.findProjectedBy("nested.f");
+```
+Result:
+```java
 // JUnit
-// assertEquals("str", model.getStr());
-// assertNull(model.getI());
-// assertNull(model.getD());
-// assertNull(model.getB());
-// assertNull(model.getNested());
+assertEquals("str", projected.getStr());
+assertNull(projected.getI());
+assertNull(projected.getD());
+assertNull(projected.getB());
+assertNull(projected.getNested());
 
-complexModelRepository.findProjectedBy("nested.f");
-
-// JUnit
-// assertNull(model.getStr());
-// assertNull(model.getI());
-// assertNull(model.getD());
-// assertNull(model.getB());
-// assertEquals(7.8f, model.getNested().getF());
+assertNull(nestedProjected.getStr());
+assertNull(nestedProjected.getI());
+assertNull(nestedProjected.getD());
+assertNull(nestedProjected.getB());
+assertEquals(7.8f, nestedProjected.getNested().getF());
 ```
 
+Approach 2: QueryDSL `Path`
 ```java
-// By QueryDSL Path
+// QueryDSL PathBuilder
 PathBuilder<Car> entityPath = new PathBuilder<>(ComplexModel.class, "entity");
-carRepository.findAllProjectedBy(entityPath.getString("str"));
-
-
+var projected = carRepository.findProjectedBy(entityPath.getString("str"));
+```
+Result:
+```java
 // JUnit
-// assertEquals("str", model.getStr());
-// assertNull(model.getI());
-// assertNull(model.getD());
-// assertNull(model.getB());
-// assertNull(model.getNested());
+assertEquals("str", projected.getStr());
+assertNull(projected.getI());
+assertNull(projected.getD());
+assertNull(projected.getB());
+assertNull(projected.getNested());
 ```
 
+Approach 3: Java `Class` as projection reference
 ```java
 // By projection Class
-carRepository.findAllProjectedBy(ProjectModel.class);
-
+var projected = carRepository.findProjectedBy(ProjectModel.class);
+```
+Result:
+```java
 // JUnit
-// assertEquals("str", model.getStr());
-// assertNull(model.getI());
-// assertNull(model.getD());
-// assertNull(model.getB());
-// assertNull(model.getNested());
+assertEquals("str", projected.getStr());
+assertNull(projected.getI());
+assertNull(projected.getD());
+assertNull(projected.getB());
+assertNull(projected.getNested());
 ```
 
 ### [:top:](#top) Custom Conversions<a id='3.0.0-5'></a>
