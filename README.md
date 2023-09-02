@@ -16,7 +16,9 @@ graph TD;
     Car-->SubGasTank
 ```
 
-Init:
+<details>
+<summary>Entity Initialization</summary>
+
 ```java
 var car  = new Car();
 var gasTank =  new GasTank();
@@ -26,8 +28,8 @@ var frontRightWheel = new Wheel();
 var frontLeftWheel = new Wheel();
 var rareRightWheel = new Wheel();
 var rareLeftWheel = new Wheel();
-var wheels = Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel);
 ```
+</details>
 
 ___Before___ spring-boot-up-data-mongodb:
 ```java
@@ -63,7 +65,7 @@ wheelRepository.save(wheels);
 // Update Car with GasTank, Engine and Wheel(s) ref
 car.setGasTank(gasTank);
 car.setEngine(engine);
-car.setWheels(wheels);
+car.setWheels(Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel));
 carRepository.save(car);
 ```
 
@@ -105,10 +107,15 @@ public class MyConfiguration {}
 @Repository
 public interface CarRepository extends MongoRepository<Car, String>, MongoProjectionRepository<Car> {}
 // With projection feature
-
-// public interface CarRepository extends MongoRepository<Car, String> {}
-// Without projection feature
 ```
+<details>
+<summary>Repository without projection feature</summary>
+
+```java
+@Repository
+public interface CarRepository extends MongoRepository<Car, String> {}
+```
+</details>
 
 # Feature List<a id='top'></a>
 | Name | Description | Since |
@@ -289,11 +296,42 @@ assertEquals(0, wheelRepository.count());
 ```
 
 ### [:top:](#top) @ParentRef<a id='3.0.0-2'></a>
-For example:<br>
-Car object publishes cascade events to GasTank object,
-so Car object can be treated as a _parent_ of GasTank object,
-therefore the field of a GasTank, which is annotated by `@ParentRef`,
-will be set by Car object automatically.
+#### _Default Usage_
+Car is treated as a _parent_ of GasTank, because it is an event publisher to GasTank.
+<details>
+<summary>Car</summary>
+
+```java
+@EqualsAndHashCode(of = "id")
+@Data
+@Document
+public class Car {
+  @Id
+  String id;
+
+  @CascadeRef({CascadeType.CREATE, CascadeType.DELETE})
+  @DBRef
+  Engine engine;
+
+  @CascadeRef(CascadeType.CREATE)
+  @DBRef
+  GasTank gasTank;
+
+  @CascadeRef // Equivalent to @CascadeRef(CascadeType.ALL)
+  @DBRef
+  List<Wheel> wheels = new ArrayList<>();
+
+  @CascadeRef({CascadeType.UPDATE, CascadeType.DELETE})
+  @DBRef
+  GasTank subGasTank;
+}
+```
+</details>
+
+Therefore, the `@ParentRef` annotated field of a GasTank will be set by Car automatically.
+<details open>
+<summary>GasTank</summary>
+
 ```java
 @EqualsAndHashCode(of = "id")
 @Data
@@ -309,17 +347,67 @@ public class GasTank {
   double capacity = 100;
 }
 ```
+</details>
+
+#### _Advanced Usage_
+Engine is treated as a _parent_ of Motor, because it is an event publisher to Motor.
+<details>
+<summary>Engine</summary>
+
+```java
+@EqualsAndHashCode(of = "id")
+@Data
+@Document
+public class Engine {
+  @Id
+  String id;
+
+  @ParentRef
+  @DBRef
+  Car car;
+
+  double horsePower = 500;
+
+  @CascadeRef
+  @DBRef
+  Motor motor;
+}
+```
+</details>
+
+Therefore, the `@ParentRef("car")` field of Motor is set by the _car_ field of Engine automatically.
+<details open>
+<summary>Motor</summary>
+
+```java
+@EqualsAndHashCode(of = "id")
+@Data
+@Document
+public class Motor {
+  @Id
+  String id;
+
+  @ParentRef
+  @DBRef
+  Engine engine;
+
+  @ParentRef("car")
+  @DBRef
+  Car car;
+
+  double rpm = 60000;
+}
+```
+</details>
 
 Test `@ParentRef`
 ```java
+// Default usage
 assertSame(car, gasTank.getCar());
+// Advanced usage
 assertSame(car, engine.getCar());
-assertSame(car, motor.getCar());
 assertSame(engine, motor.getEngine());
-assertSame(car, frontRightWheel.getCar());
-assertSame(car, frontLeftWheel.getCar());
-assertSame(car, rareRightWheel.getCar());
-assertSame(car, rareLeftWheel.getCar());
+assertSame(car, motor.getCar());
 ```
 
 ### [:top:](#top) Annotation Driven Event<a id='3.0.0-3'></a>
@@ -332,9 +420,9 @@ assertSame(car, rareLeftWheel.getCar());
 * BeforeDeleteFromMongo
 * AfterDeleteFromMongo
 
+All annotated methods will be triggered in corresponding MongoDB lifecycle events.
 
-All annotated methods will be triggered in corresponding MongoDB events lifecycle.
-Annotated methods can only accept empty or single `SourceAndDocument` as argument.
+Annotated methods can accept only empty or single `SourceAndDocument` as argument.
 `SourceAndDocument` stores both event source object and event BSON Document at that point.
 ```java
 @Document
