@@ -147,7 +147,8 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 | | [Dot notation](#3.0.0-4.1) | String path with dot operator(.) | v3.0.0 |
 | | [Path](#3.0.0-4.2) | QueryDSL Path | v3.0.0 |
 | | [Projection Class](#3.0.0-4.3) | Java Class | v3.0.0 |
-| [Custom Conversions](#3.0.0-5) | --- | MongoCustomConversions for Java 8 Date/Time | v3.0.0 |
+| [Custom Conversions](#3.0.0-5) | --- | A collection of MongoCustomConversions | v3.0.0 |
+| | [JavaTime](#3.0.0-5.1) | MongoCustomConversions for Java 8 Date/Time | v3.0.0 |
 
 ### [:top:](#top) Cascade(@CascadeRef)<a id='3.0.0-1'></a>
 ```diff
@@ -709,13 +710,14 @@ assertNull(projected.getNested());
 </details>
 
 ### [:top:](#top) Custom Conversions<a id='3.0.0-5'></a>
+#### [:top:](#top) JavaTime<a id='3.0.0-5.1'></a>
 MongoDB doesn't natively support Java 8 Date/Time(Ex: `LocalDateTime`), so here is a convenient solution.
-`MongoConverters.javaTimeConversions()` includes all types of `Converter` for Java 8 Date/Time.
 ```java
 @Configuration
 public class MongoConfig extends AbstractMongoClientConfiguration {
   @Override
   public MongoCustomConversions customConversions() {
+    // MongoConverters.javaTimeConversions() includes all types of Java 8 Date/Time converters
     return MongoConverters.javaTimeConversions();
   }
 }
