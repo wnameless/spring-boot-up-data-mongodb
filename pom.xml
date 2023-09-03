@@ -15,7 +15,7 @@
   </parent>
 
   <name>spring-boot-up-data-mongodb</name>
-  <description>MongoDB enhancement brought by spring-boot-up</description>
+  <description>MongoDB enhancement of Cascade and Event brought by spring-boot-up</description>
   <url>https://github.com/wnameless/spring-boot-up-data-mongodb</url>
 
   <licenses>

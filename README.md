@@ -2,18 +2,24 @@
 
 spring-boot-up-data-mongodb
 =============
-MongoDB enhancement brought by spring-boot-up.
+MongoDB enhancement of Cascade and Event brought by spring-boot-up.
 
-## Goal - introducing `Cascade` and more features into Spring MongoDB
-## Purpose - reduces the boilerplate codes followed by Spring `@DBRef`
+## _Goal_ - introducing `Cascade` and more features into Spring MongoDB
+## _Purpose_ - reducing boilerplate codes followed by Spring `@DBRef`($ref)
 Entity relationship model:
 ```mermaid
 graph TD;
-    Car-->GasTank;
-    Car-->Engine;
+    Car-- "$ref: gasTank" -->GasTank;
+    GasTank-. "$ref: car" .->Car;
+    Car-- "$ref: engine" -->Engine;
+    Engine-. "$ref: car" .->Car;
     Engine-->Motor;
-    Car-->Wheel;
-    Car-->SubGasTank
+    Motor-. "$ref: engine" .->Engine;
+    Motor-. "$ref: car" .->Car;
+    Car-- "$ref: wheels" -->Wheel;
+    Wheel-. "$ref: car" .->Car;
+    Car-- "$ref: subGasTank" -->SubGasTank
+    SubGasTank-. "$ref: car" .->Car;
 ```
 
 <details>
@@ -31,7 +37,9 @@ var rareLeftWheel = new Wheel();
 ```
 </details>
 
-___Before___ spring-boot-up-data-mongodb:
+<details>
+<summary><i>Boilerplate codes</i> before <b>spring-boot-up-data-mongodb</b> was introduced</summary>
+
 ```java
 // Must save all documents before assigning @DBRef fields
 
@@ -68,10 +76,13 @@ car.setEngine(engine);
 car.setWheels(Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rareLeftWheel));
 carRepository.save(car);
 ```
+</details>
 
-___After___ spring-boot-up-data-mongodb:
+<details open>
+<summary><i>Compact codes</i> after utilizing <b>spring-boot-up-data-mongodb</b></summary>
+
 ```java
-// Only need to focus on the relationships between documents
+// Only need to focus on setting relationships between documents
 car.setGasTank(gasTank);
 car.setEngine(engine);
 engine.setMotor(motor);
@@ -79,6 +90,7 @@ car.setWheels(wheels);
 
 carRepository.save(car);
 ```
+</details>
 
 # Maven Repo
 ```xml
@@ -267,7 +279,7 @@ assertSame(subGasTank, car.getSubGasTank());
 The main diffrence between `CascadeType.UPDATE` and plain `@DBREf` is that<br>
 `CascadeType.UPDATE` allows unsaved documents to be set in `@DBREf` fields but plain `@DBREf` won't.
 ```diff
-@@ CascadeType.UPDATE won't change the behaviour in @DBRef's nature @@
+@@ Once @DBRef has been established, CascadeType.UPDATE won't change anything in @DBRef's nature @@
 ```
 
 Test `CascadeType.DELETE`
