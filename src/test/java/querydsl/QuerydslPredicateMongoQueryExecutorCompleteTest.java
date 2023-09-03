@@ -69,11 +69,12 @@ public class QuerydslPredicateMongoQueryExecutorCompleteTest {
   public void testFindOne() {
     PathBuilder<ComplexModel> entityPath = new PathBuilder<>(ComplexModel.class, "entity");
     Predicate p = entityPath.getString("str").startsWith("s");
+    assertEquals(complexModelRepository.findByStrStartsWith("s"),
+        querydslPredicateMongoQueryExecutor.findOne(p, ComplexModel.class));
 
     Document document =
         new CustomSpringDataMongodbQuery<>(mongoOperations, ComplexModel.class).createQuery(p);
     Query query = Query.query(new DocumentCriteria(document));
-
     assertEquals(complexModelRepository.findByStrStartsWith("s"),
         querydslPredicateMongoQueryExecutor.findOne(query, ComplexModel.class));
 
