@@ -1,5 +1,5 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.wnameless.spring.boot.up/spring-boot-up-data-mongodb/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.wnameless.spring.boot.up/spring-boot-up-data-mongodb)
-[![codecov](https://codecov.io/gh/wnameless/spring-boot-up-data-mongodb/branch/master/graph/badge.svg)](https://codecov.io/gh/wnameless/spring-boot-up-data-mongodb)
+[![codecov](https://codecov.io/gh/wnameless/spring-boot-up-data-mongodb/branch/main/graph/badge.svg)](https://codecov.io/gh/wnameless/spring-boot-up-data-mongodb)
 
 spring-boot-up-data-mongodb
 =============
