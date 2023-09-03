@@ -130,7 +130,7 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 </details>
 
 # Feature List<a id='top'></a>
-| Name | Opotion | Description | Since |
+| Name | Option | Description | Since |
 | --- | --- | --- | --- |
 | [Cascade(@CascadeRef)](#3.0.0-1) | --- | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
 | | [CascadeType.CREATE](#3.0.0-1.1) | Cascade CREATE | v3.0.0 |
@@ -138,8 +138,15 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 | | [CascadeType.DELETE](#3.0.0-1.3) | Cascade DELETE | v3.0.0 |
 | | CascadeType.ALL | A combining of CREATE, UPDATE and DELETE  | v3.0.0 |
 | [@ParentRef](#3.0.0-2) | --- | Automatically set the cascade event publisher object into `@ParentRef` annotated fields of the cascade event receiver | v3.0.0 |
+| | [Default Usage](#3.0.0-2.1) | No additional configuration  | v3.0.0 |
+| | [Advanced Usage](#3.0.0-2.2) | Providing a field name of parent object | v3.0.0 |
 | [Annotation Driven Event](#3.0.0-3) | --- | Annotation Driven Event feature for `MongoEvent` | v3.0.0 |
-| [Projection](#3.0.0-4) | --- | Projection feature supports both QueryDSL `Predicate` and Spring Data `Query` | v3.0.0 |
+| | [No arguments](#3.0.0-3.1) | Annotated methods with no arguments | v3.0.0 |
+| | [SourceAndDocument](#3.0.0-3.2) | Annotated methods with single `SourceAndDocument` argument | v3.0.0 |
+| [Projection](#3.0.0-4) | --- | Projection feature for Spring Data MongoDB entities | v3.0.0 |
+| | [Dot notation](#3.0.0-4.1) | String path with dot operator(.) | v3.0.0 |
+| | [Path](#3.0.0-4.2) | QueryDSL Path | v3.0.0 |
+| | [Projection Class](#3.0.0-4.3) | Java Class | v3.0.0 |
 | [Custom Conversions](#3.0.0-5) | --- | MongoCustomConversions for Java 8 Date/Time | v3.0.0 |
 
 ### [:top:](#top) Cascade(@CascadeRef)<a id='3.0.0-1'></a>
@@ -340,7 +347,7 @@ assertEquals(0, wheelRepository.count());
 ```
 
 ### [:top:](#top) @ParentRef<a id='3.0.0-2'></a>
-#### _Default Usage_
+#### [:top:](#top) Default Usage<a id='3.0.0-2.1'></a>
 Car is treated as a _parent_ of GasTank, because it is an event publisher to GasTank.
 <details>
 <summary>Car</summary>
@@ -393,7 +400,7 @@ public class GasTank {
 ```
 </details>
 
-#### _Advanced Usage_
+#### [:top:](#top) Advanced Usage<a id='3.0.0-2.2'></a>
 Engine is treated as a _parent_ of Motor, because it is an event publisher to Motor.
 <details>
 <summary>Engine</summary>
@@ -467,7 +474,49 @@ assertSame(car, motor.getCar());
 All annotated methods will be triggered in corresponding MongoDB lifecycle events.
 
 Annotated methods can accept only empty or single `SourceAndDocument` as argument.
+<details>
+<summary>SourceAndDocument</summary>
+
+```java
+public final class SourceAndDocument {
+
+  private final Object source;
+  private final Document document;
+
+  public SourceAndDocument(Object source, Document document) {
+    this.source = source;
+    this.document = document;
+  }
+
+  public Object getSource() {
+    return source;
+  }
+
+  public Document getDocument() {
+    return document;
+  }
+
+  public boolean hasSource(Class<?> type) {
+    return type.isAssignableFrom(source.getClass());
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> T getSource(Class<T> type) {
+    return (T) source;
+  }
+
+  // #hashCode, #equals, #toString
+}
+```
+</details>
+
 `SourceAndDocument` stores both event source object and event BSON Document at that point.
+```diff
+- Annotation Driven Event won't be triggered under Mongo bulk operations
+```
+
+#### [:top:](#top) No arguments<a id='3.0.0-3.1'></a>
+
 ```java
 @Document
 public class Car {
@@ -479,14 +528,43 @@ public class Car {
     System.out.println("beforeConvertToMongo");
   }
 
-  @BeforeConvertToMongo
-  void beforeConvertArg(SourceAndDocument sad) {
-    var car = sad.getSource(Car.class);
-  }
-
   @BeforeSaveToMongo
   void beforeSave() {
     System.out.println("beforeSaveToMongo");
+  }
+
+  @AfterSaveToMongo
+  void afterSave() {
+    System.out.println("afterSaveToMongo");
+  }
+
+  @AfterConvertFromMongo
+  void afterConvert() {
+    System.out.println("afterConvertFromMongo");
+  }
+
+  @BeforeDeleteFromMongo
+  void beforeDeleteFromMongo() {
+    System.out.println("beforeDeleteFromMongo");
+  }
+
+  @AfterDeleteFromMongo
+  void afterDeleteFromMongo() {
+    System.out.println("afterDeleteFromMongo");
+  }
+}
+```
+
+#### [:top:](#top) SourceAndDocument<a id='3.0.0-3.2'></a>
+```java
+@Document
+public class Car {
+  @Id
+  String id;
+
+  @BeforeConvertToMongo
+  void beforeConvertArg(SourceAndDocument sad) {
+    var car = sad.getSource(Car.class);
   }
 
   @BeforeSaveToMongo
@@ -495,18 +573,8 @@ public class Car {
   }
 
   @AfterSaveToMongo
-  void afterSave() {
-    System.out.println("afterSaveToMongo");
-  }
-
-  @AfterSaveToMongo
   void afterSaveArg(SourceAndDocument sad) {
     var car = sad.getSource(Car.class);
-  }
-
-  @AfterConvertFromMongo
-  void afterConvert() {
-    System.out.println("afterConvertFromMongo");
   }
 
   @AfterConvertFromMongo
@@ -515,18 +583,8 @@ public class Car {
   }
 
   @BeforeDeleteFromMongo
-  void beforeDeleteFromMongo() {
-    System.out.println("beforeDeleteFromMongo");
-  }
-
-  @BeforeDeleteFromMongo
   void beforeDeleteFromMongoArg(SourceAndDocument sad) {
     var car = sad.getSource(Car.class);
-  }
-
-  @AfterDeleteFromMongo
-  void afterDeleteFromMongo() {
-    System.out.println("afterDeleteFromMongo");
   }
 
   @AfterDeleteFromMongo
@@ -534,9 +592,6 @@ public class Car {
     var car = sad.getSource(Car.class);
   }
 }
-```
-```diff
-- Annotation Driven Event won't be triggered under Mongo bulk operations
 ```
 
 ### [:top:](#top) Projection<a id='3.0.0-4'></a>
@@ -589,14 +644,17 @@ model.setNested(nested);
 complexModelRepository.save(model);
 ```
 
-#### Projection can be performed by 3 ways:
-Approach 1: dot path 
+### Projection can be performed in 3 ways:
+
+#### [:top:](#top) Approach 1: Dot notation<a id='3.0.0-4.1'></a>
 ```java
-// Use dot operator(.) to represent nested projection object
 var projected = complexModelRepository.findProjectedBy("str");
+// Use dot operator(.) to represent nested projection object
 var nestedProjected = complexModelRepository.findProjectedBy("nested.f");
 ```
-Result:
+<details>
+<summary>Result</summary>
+
 ```java
 // JUnit
 assertEquals("str", projected.getStr());
@@ -611,14 +669,17 @@ assertNull(nestedProjected.getD());
 assertNull(nestedProjected.getB());
 assertEquals(7.8f, nestedProjected.getNested().getF());
 ```
+</details>
 
-Approach 2: QueryDSL `Path`
+#### [:top:](#top) Approach 2: QueryDSL Path<a id='3.0.0-4.2'></a>
 ```java
 // QueryDSL PathBuilder
 PathBuilder<Car> entityPath = new PathBuilder<>(ComplexModel.class, "entity");
 var projected = carRepository.findProjectedBy(entityPath.getString("str"));
 ```
-Result:
+<details>
+<summary>Result</summary>
+
 ```java
 // JUnit
 assertEquals("str", projected.getStr());
@@ -627,13 +688,16 @@ assertNull(projected.getD());
 assertNull(projected.getB());
 assertNull(projected.getNested());
 ```
+</details>
 
-Approach 3: Java `Class` as projection reference
+#### [:top:](#top) Approach 3: Java Class<a id='3.0.0-4.3'></a>
 ```java
 // By projection Class
 var projected = carRepository.findProjectedBy(ProjectModel.class);
 ```
-Result:
+<details>
+<summary>Result</summary>
+
 ```java
 // JUnit
 assertEquals("str", projected.getStr());
@@ -642,6 +706,7 @@ assertNull(projected.getD());
 assertNull(projected.getB());
 assertNull(projected.getNested());
 ```
+</details>
 
 ### [:top:](#top) Custom Conversions<a id='3.0.0-5'></a>
 MongoDB doesn't natively support Java 8 Date/Time(Ex: `LocalDateTime`), so here is a convenient solution.
