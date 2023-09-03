@@ -130,19 +130,26 @@ public interface CarRepository extends MongoRepository<Car, String> {}
 </details>
 
 # Feature List<a id='top'></a>
-| Name | Description | Since |
-| --- | --- | --- |
-| [Cascade(@CascadeRef)](#3.0.0-1) | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
-| [@ParentRef](#3.0.0-2) | Automatically set the cascade event publisher object into `@ParentRef` annotated field of the cascade event receiver | v3.0.0 |
-| [Annotation Driven Event](#3.0.0-3) | Annotation Driven Event feature for `MongoEvent` | v3.0.0 |
-| [Projection](#3.0.0-4) | Projection feature supports both QueryDSL `Predicate` and Spring Data `Query` | v3.0.0 |
-| [Custom Conversions](#3.0.0-5) | MongoCustomConversions for Java 8 Date/Time | v3.0.0 |
+| Name | Opotion | Description | Since |
+| --- | --- | --- | --- |
+| [Cascade(@CascadeRef)](#3.0.0-1) | --- | Cascade feature for Spring Data MongoDB entities | v3.0.0 |
+| | [CascadeType.CREATE](#3.0.0-1.1) | Cascade CREATE | v3.0.0 |
+| | [CascadeType.UPDATE](#3.0.0-1.2) | Cascade UPDATE | v3.0.0 |
+| | [CascadeType.DELETE](#3.0.0-1.3) | Cascade DELETE | v3.0.0 |
+| | CascadeType.ALL | A combining of CREATE, UPDATE and DELETE  | v3.0.0 |
+| [@ParentRef](#3.0.0-2) | --- | Automatically set the cascade event publisher object into `@ParentRef` annotated fields of the cascade event receiver | v3.0.0 |
+| [Annotation Driven Event](#3.0.0-3) | --- | Annotation Driven Event feature for `MongoEvent` | v3.0.0 |
+| [Projection](#3.0.0-4) | --- | Projection feature supports both QueryDSL `Predicate` and Spring Data `Query` | v3.0.0 |
+| [Custom Conversions](#3.0.0-5) | --- | MongoCustomConversions for Java 8 Date/Time | v3.0.0 |
 
 ### [:top:](#top) Cascade(@CascadeRef)<a id='3.0.0-1'></a>
 ```diff
 + @CascadeRef must annotate alongside @DBRef
 ```
 Entity classes:
+<details open>
+<summary>Car</summary>
+
 ```java
 @EqualsAndHashCode(of = "id")
 @Data
@@ -168,6 +175,11 @@ public class Car {
   GasTank subGasTank;
 }
 ```
+</details>
+
+<details>
+<summary>GasTank</summary>
+
 ```java
 @EqualsAndHashCode(of = "id")
 @Data
@@ -183,6 +195,11 @@ public class GasTank {
   double capacity = 100;
 }
 ```
+</details>
+
+<details>
+<summary>Engine</summary>
+
 ```java
 @EqualsAndHashCode(of = "id")
 @Data
@@ -202,6 +219,11 @@ public class Engine {
   Motor motor;
 }
 ```
+</details>
+
+<details>
+<summary>Motor</summary>
+
 ```java
 @EqualsAndHashCode(of = "id")
 @Data
@@ -221,6 +243,11 @@ public class Motor {
   double rpm = 60000;
 }
 ```
+</details>
+
+<details>
+<summary>Wheel</summary>
+
 ```java
 @EqualsAndHashCode(of = "id")
 @Data
@@ -235,9 +262,10 @@ public class Wheel {
 
   String tireBrand = "MAXXIS";
 }
-
 ```
+</details>
 
+---
 JUnit `BeaforeEach`
 ```java
 mongoTemplate.getDb().drop(); // reset DB before each test
@@ -249,8 +277,9 @@ car.setWheels(Arrays.asList(frontRightWheel, frontLeftWheel, rareRightWheel, rar
 carRepository.save(car);
 ```
 
-Test `CascadeType.CREATE`
+#### [:top:](#top) CascadeType.CREATE<a id='3.0.0-1.1'></a>
 ```java
+// JUnit
 assertEquals(1, carRepository.count());
 assertEquals(1, gasTankRepository.count());
 assertEquals(1, engineRepository.count());
@@ -258,8 +287,9 @@ assertEquals(1, motorRepository.count());
 assertEquals(4, wheelRepository.count());
 ```
 
-Test `CascadeType.UPDATE`
+#### [:top:](#top) CascadeType.UPDATE<a id='3.0.0-1.2'></a>
 ```java
+// JUnit
 car = new Car();
 var subGasTank = new GasTank();
 car.setSubGasTank(subGasTank);
@@ -282,8 +312,9 @@ The main diffrence between `CascadeType.UPDATE` and plain `@DBREf` is that<br>
 @@ Once @DBRef has been established, CascadeType.UPDATE won't change anything in @DBRef's nature @@
 ```
 
-Test `CascadeType.DELETE`
+#### [:top:](#top) CascadeType.DELETE<a id='3.0.0-1.3'></a>
 ```java
+// JUnit
 carRepository.deleteAll();
 assertEquals(0, carRepository.count());
 assertEquals(1, engineRepository.count());
@@ -295,6 +326,7 @@ assertEquals(4, wheelRepository.count());
 - Cascade is NOT working on bulk operations(ex: CrudRepository#deleteAll)
 ```
 ```java
+// JUnit
 carRepository.deleteAll(carRepository.findAll()); 
 assertEquals(0, carRepository.count());
 assertEquals(0, engineRepository.count());
