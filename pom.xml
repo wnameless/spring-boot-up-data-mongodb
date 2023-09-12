@@ -6,7 +6,7 @@
 
   <groupId>com.github.wnameless.spring.boot.up</groupId>
   <artifactId>spring-boot-up-data-mongodb</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
 
   <parent>
     <groupId>org.springframework.boot</groupId>

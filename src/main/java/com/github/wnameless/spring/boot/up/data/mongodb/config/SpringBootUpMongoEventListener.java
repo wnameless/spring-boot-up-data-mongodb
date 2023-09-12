@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -21,7 +22,6 @@ import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
 import org.springframework.util.ReflectionUtils;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.wnameless.spring.boot.up.SpringBootUp;
 import com.github.wnameless.spring.boot.up.data.mongodb.cascade.CascadeCreateUpdateCallback;
 import com.github.wnameless.spring.boot.up.data.mongodb.cascade.CascadeDeleteCallback;
 import com.github.wnameless.spring.boot.up.data.mongodb.cascade.ParentRefCallback;
@@ -41,13 +41,15 @@ public class SpringBootUpMongoEventListener extends AbstractMongoEventListener<O
       Caffeine.newBuilder().maximumSize(16).build();
 
   @Autowired
+  private ApplicationContext appCtx;
+  @Autowired
   private MongoOperations mongoOperations;
 
   private boolean allowAnntationDrivenEvent = false;
 
   @EventListener(ApplicationReadyEvent.class)
   private void setAnntationDrivenEventAllowance() {
-    SpringBootUp.getBeansWithAnnotation(Configuration.class).values().forEach(bean -> {
+    appCtx.getBeansWithAnnotation(Configuration.class).values().forEach(bean -> {
       EnableSpringBootUpMongo anno =
           AnnotationUtils.findAnnotation(bean.getClass(), EnableSpringBootUpMongo.class);
       if (anno != null) {
