@@ -2,12 +2,15 @@ package cascade.parent;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import com.github.wnameless.spring.boot.up.EnableSpringBootUp;
 import cascade.parent.model.Branch;
 import cascade.parent.model.Forest;
 import cascade.parent.model.Leaf;
@@ -36,6 +39,11 @@ public class ParentRefTest {
     treeRepository.deleteAll();
     branchRepository.deleteAll();
     leafRepository.deleteAll();
+  }
+
+  @Test
+  public void testEnableSpringBootUpMongoWithEnableSpringBootUp() {
+    assertNotNull(AnnotationUtils.findAnnotation(AppConfig.class, EnableSpringBootUp.class));
   }
 
   @Test
