@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -19,9 +20,11 @@ import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.wnameless.spring.boot.up.SpringBootUpApplicationContextProvider;
 import com.github.wnameless.spring.boot.up.data.mongodb.cascade.CascadeCreateUpdateCallback;
 import com.github.wnameless.spring.boot.up.data.mongodb.cascade.CascadeDeleteCallback;
 import com.github.wnameless.spring.boot.up.data.mongodb.cascade.ParentRefCallback;
@@ -33,6 +36,8 @@ import com.github.wnameless.spring.boot.up.data.mongodb.interceptor.annotation.B
 import com.github.wnameless.spring.boot.up.data.mongodb.interceptor.annotation.BeforeDeleteFromMongo;
 import com.github.wnameless.spring.boot.up.data.mongodb.interceptor.annotation.BeforeSaveToMongo;
 
+@DependsOn(SpringBootUpApplicationContextProvider.BEAN_NAME)
+@Component
 public class SpringBootUpMongoEventListener extends AbstractMongoEventListener<Object> {
 
   private static final String ID = "_id";

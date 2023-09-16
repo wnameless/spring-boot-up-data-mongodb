@@ -1,5 +1,6 @@
 Version 3.0.0
 + First release
 
-Version 3.0.1
-* Remove Java 8 Date/Time DayOfWeek and Month Enums converters
+Version 3.1.0
+* Using spring-boot-up-core v3.1.0
+* @EnableSpringBootUpMongo is no longer needed to annotate with @EnableSpringBootUp

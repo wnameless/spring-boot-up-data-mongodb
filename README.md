@@ -111,7 +111,6 @@ However, the MAJOR version is always matched the Spring Boot MAJOR version.
 # Quick Start
 ```java
 @EnableSpringBootUpMongo(allowAnnotationDrivenEvent = true) // Default value is false
-@EnableSpringBootUp
 @Configuration
 public class MyConfiguration {}
 ```
